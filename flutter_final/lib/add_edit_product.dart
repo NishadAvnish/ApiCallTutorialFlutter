@@ -1,3 +1,7 @@
+import 'package:apicallflutter/constants/app_urls.dart';
+import 'package:apicallflutter/models/product_model.dart';
+import 'package:apicallflutter/models/product_req_model.dart';
+import 'package:apicallflutter/services/api_helper.dart';
 import 'package:flutter/material.dart';
 
 class CreateProductPage extends StatefulWidget {
@@ -10,27 +14,64 @@ class _CreateProductPageState extends State<CreateProductPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
+  ProductModel? productModel;
 
   @override
   void initState() {
     super.initState();
   }
 
-  void _saveProduct() {
+  @override
+  void didChangeDependencies() {
+    productModel = ModalRoute.of(context)?.settings.arguments as ProductModel;
+    if (productModel != null) {
+      _nameController.text = productModel?.name ?? "";
+      _priceController.text = productModel?.price ?? "";
+      _urlController.text = productModel?.imageUrl ?? "";
+    }
+    super.didChangeDependencies();
+  }
+
+  Future<void> _saveProduct() async {
     if (_formKey.currentState!.validate()) {
       String name = _nameController.text;
       double price = double.parse(_priceController.text);
       String url = _urlController.text;
+      ProductReqmodel reqModel =
+          ProductReqmodel(name: name, price: price, imageUrl: url);
+      final bool isSuccess = productModel == null
+          ? await addProduct(reqModel)
+          : await updateProduct(reqModel, productModel!.id!);
+      if (isSuccess) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Product '$name' saved successfully!")),
+        );
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Product '$name' saved successfully!")),
-      );
+        // Clear the fields after saving
+        _nameController.clear();
+        _priceController.clear();
+        _urlController.clear();
+        Navigator.of(context).pop();
+      }
+    }
+  }
 
-      // Clear the fields after saving
-      _nameController.clear();
-      _priceController.clear();
-      _urlController.clear();
+  Future<bool> addProduct(ProductReqmodel reqModel) async {
+    try {
+      await ApiHelper.postCall(AppUrls.addProduct, body: reqModel.toJson());
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateProduct(ProductReqmodel reqModel, int id) async {
+    try {
+      await ApiHelper.putCall(AppUrls.editProduct(id), body: reqModel.toJson());
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -94,7 +135,9 @@ class _CreateProductPageState extends State<CreateProductPage> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _saveProduct,
+                onPressed: () {
+                  _saveProduct();
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   padding:

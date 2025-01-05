@@ -70,7 +70,7 @@ app.put('/api/product', (req, res) => {
 
     if (name) product.name = name;
     if (price) product.price = price;
-    if (imageUrl) product.price = imageUrl;
+    if (imageUrl) product.imageUrl = imageUrl;
 
     res.status(200).send(new ApiResponse({
         status: 200,

@@ -1,7 +1,7 @@
 class ProductModel {
   int? id;
   String? name;
-  int? price;
+  String? price;
   String? imageUrl;
 
   ProductModel({this.id, this.name, this.price, this.imageUrl});
@@ -9,7 +9,7 @@ class ProductModel {
   ProductModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
-    price = json['price'];
+    price = json['price']?.toString();
     imageUrl = json['imageUrl'];
   }
 
