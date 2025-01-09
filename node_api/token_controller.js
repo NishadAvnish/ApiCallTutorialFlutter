@@ -2,23 +2,27 @@ import jwt, { decode } from "jsonwebtoken"
 import asyncHandler from "./response/asyncHandler.js";
 import { BadRequestException, TokenExpirationException } from "./response/apiError.js";
 import { ApiResponse } from "./response/response.js";
+import { privateSecretKey } from "./constants/app.constant.js";
 
 
 const createToken = ({ payload, expiryTime }) => {
-    const token = jwt.sign(payload, process.env.JWT_KEY, { expiresIn: expiryTime != null ? expiryTime * 10 * 60 : null })
+    const token = jwt.sign(payload, privateSecretKey, { expiresIn: expiryTime != null ? expiryTime * 10 * 60 : null })
     return token;
 }
 
 const tokenAuthentication = asyncHandler(async (req, res, next) => {
-    const token = req.body.accessToken || req.query.params.accessToken;
+
+    const token = req?.body?.accessToken || req?.query?.params?.accessToken || req?.headers?.authorization;
+    console.log("Avnishh....")
+
     if (!token) {
-        next(new BadRequestException("Jwt Token Required!"))
+        return next(new BadRequestException("Jwt Token Required!"))
     }
-    const decodedPassword = jwt.verify(token, process.env.JWT_KEY, (error, user) => {
+    const decodedPassword = jwt.verify(token, privateSecretKey, (error, user) => {
         if (error.name === "TokenExpiredError") {
-            next(new TokenExpirationException());
+            return next(new TokenExpirationException());
         } else {
-            next(new BadRequestException(error.message));
+            return next(new BadRequestException(error.message));
         }
     });
     next();
@@ -36,7 +40,7 @@ const createTokenUsingRefreshToken = asyncHandler((req, res, next) => {
 
     console.log(token);
     let decodedUser;
-    jwt.verify(token, process.env.JWT_KEY, (error, user) => {
+    jwt.verify(token, privateSecretKey, (error, user) => {
         if (error) {
             if (error.name === "TokenExpiredError") {
                 next(new TokenExpirationException());
@@ -47,7 +51,9 @@ const createTokenUsingRefreshToken = asyncHandler((req, res, next) => {
         decodedUser = user;
     });
 
-
+    if (decodedUser.email != email) {
+        next(new BadRequestException("Wrong Email address"))
+    }
 
     const refreshToken = createToken({ payload: { email: email }, expiryTime: 24 })
     const accessToken = createToken({ payload: { email: email }, expiryTime: 1 })

@@ -2,6 +2,7 @@ import 'package:apicallflutter/constants/app_urls.dart';
 import 'package:apicallflutter/models/product_model.dart';
 import 'package:apicallflutter/models/product_req_model.dart';
 import 'package:apicallflutter/services/api_helper.dart';
+import 'package:apicallflutter/services/app_exception.dart';
 import 'package:flutter/material.dart';
 
 class CreateProductPage extends StatefulWidget {
@@ -41,7 +42,7 @@ class _CreateProductPageState extends State<CreateProductPage> {
           ProductReqmodel(name: name, price: price, imageUrl: url);
       final bool isSuccess = productModel == null
           ? await addProduct(reqModel)
-          : await updateProduct(reqModel, productModel!.id!);
+          : await updateProduct(reqModel, 3);
       if (isSuccess) {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -70,7 +71,11 @@ class _CreateProductPageState extends State<CreateProductPage> {
     try {
       await ApiHelper.putCall(AppUrls.editProduct(id), body: reqModel.toJson());
       return true;
+    } on NotFoundException catch (e) {
+      print("Catched Exception NotFoundException----> ${e.toString()}");
+      return false;
     } catch (e) {
+      print("Catched Exception----> ${e.runtimeType}");
       return false;
     }
   }

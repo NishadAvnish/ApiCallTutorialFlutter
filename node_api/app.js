@@ -17,8 +17,8 @@ let products = [
 ];
 
 // routes
-// app.use("/api/v1/users", userRoutes);
-// app.use("/api/v1/generateToken", createTokenUsingRefreshToken);
+app.use("/api/users", userRoutes);
+app.use("/api/generateToken", createTokenUsingRefreshToken);
 
 // app.use(tokenAuthentication);
 
@@ -34,7 +34,7 @@ app.get('/api/products', (req, res) => {
 app.post('/api/product', (req, res) => {
     const { name, price, imageUrl } = req.body;
     if (!name || !price) {
-        return res.json({
+        return res.status(403).json({
             status: 403,
             message: 'Error',
             data: 'Name and price are required'
@@ -61,10 +61,10 @@ app.put('/api/product', (req, res) => {
     const product = products.find(p => p.id === parseInt(id));
 
     if (!product) {
-        return res.json({
+        return res.status(404).json({
             status: 404,
-            message: 'Error',
-            data: 'Product not found'
+            message: 'Product not found',
+            data: null
         });
     }
 
@@ -86,10 +86,10 @@ app.delete('/api/product', (req, res) => {
     const productIndex = products.findIndex(p => p.id === parseInt(id));
 
     if (productIndex === -1) {
-        return res.json({
+        return res.status(404).json({
             status: 404,
-            message: 'Error',
-            data: 'Product not found'
+            message: 'Product not found',
+            data: null
         });
     }
 
@@ -113,7 +113,6 @@ app.all("*", (req, res, next) => {
 })
 
 app.use((error, req, res, next) => {
-
     if (error instanceof ApiError) {
         res.status(error.statusCode || 500)
             .send(new ApiResponse({ status: error.statusCode, message: error.message, data: error.data }))

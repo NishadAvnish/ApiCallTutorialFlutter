@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:apicallflutter/constants/app_urls.dart';
+import 'package:apicallflutter/services/response.dart';
 import 'package:http/http.dart' as http;
 
 class ApiHelper {
@@ -11,8 +13,7 @@ class ApiHelper {
     try {
       final response = await http.get(Uri.parse(AppUrls.baseUrl + endPoint)
           .replace(queryParameters: queryParams));
-      final responseJson = json.decode(response.body);
-      return responseJson["data"];
+      return ApiResponse.getResponse(response);
     } catch (e) {
       rethrow;
     }
@@ -23,8 +24,7 @@ class ApiHelper {
     try {
       final response =
           await http.post(Uri.parse(AppUrls.baseUrl + endPoint), body: body);
-      final responseJson = json.decode(response.body);
-      return responseJson["data"];
+      return ApiResponse.getResponse(response);
     } catch (e) {
       rethrow;
     }
@@ -35,8 +35,9 @@ class ApiHelper {
     try {
       final response =
           await http.put(Uri.parse(AppUrls.baseUrl + endPoint), body: body);
-      final responseJson = json.decode(response.body);
-      return responseJson["data"];
+      return ApiResponse.getResponse(response);
+    } on SocketException catch (e) {
+      rethrow;
     } catch (e) {
       rethrow;
     }
@@ -44,10 +45,8 @@ class ApiHelper {
 
   static Future<dynamic> deleteCall(String endPoint) async {
     try {
-      final response =
-          await http.delete(Uri.parse(AppUrls.baseUrl + endPoint));
-      final responseJson = json.decode(response.body);
-      return responseJson["data"];
+      final response = await http.delete(Uri.parse(AppUrls.baseUrl + endPoint));
+      return ApiResponse.getResponse(response);
     } catch (e) {
       rethrow;
     }

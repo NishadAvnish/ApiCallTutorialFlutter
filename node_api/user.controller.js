@@ -5,52 +5,6 @@ import { BadRequestException, NotFoundException, UnauthorizationException, Unive
 import { AppStrings } from "./constants/app.strings.js";
 import { ApiResponse } from "./response/response.js";
 import { createToken } from "./token_controller.js";
-import { User } from "./user.model.js";
-
-
-
-const registerUser = asyncHandler(async (req, res, next) => {
-
-      const { fullName, email, password, phoneNo } = req.body;
-      if ([fullName, email, password, phoneNo].some((entry) => {
-            return entry.trim() === ""
-      })) {
-            next(new BadRequestException(AppStrings.allParamsRequired));
-      }
-
-
-      const existedUser = User.findOne({ email: email });
-      console.log(existedUser);
-      if (existedUser) {
-            res.status(200)
-                  .send(new ApiResponse({ status: 200, message: "User Already exists", data: null }))
-            return;
-      }
-
-      const encryptedPassword = await bcrypt.hash(password, 10);
-
-
-      const user = await User.create(
-            {
-                  fullName: fullName,
-                  password: encryptedPassword,
-                  phoneNo: phoneNo,
-                  email: email
-            }
-      )
-
-      const createdUser = User.findById(user._id).select(
-            "-password",
-      )
-
-      if (!createdUser) {
-            next(new UniversalApiError("Not able to create user! Internal Server error", 500));
-      }
-
-      res.status(200).send(new ApiResponse({ status: 200, message: "User Created successfully!", data: createdUser }));
-
-})
-
 
 
 const loginUser = asyncHandler(async (req, res, next) => {
@@ -63,10 +17,8 @@ const loginUser = asyncHandler(async (req, res, next) => {
       // create accessToken with 1 day expiry
 
       const { email, password } = req.body;
-      if ([email, password].some((entry) => {
-            return entry.trim() === ""
-      })) {
-            next(new BadRequestException(AppStrings.allParamsRequired));
+      if (!email || !password || email?.trim() === "" || password === "") {
+            return next(new BadRequestException(AppStrings.allParamsRequired));
       }
 
       const refreshToken = createToken({ payload: { email: email }, expiryTime: 24 })
@@ -78,10 +30,11 @@ const loginUser = asyncHandler(async (req, res, next) => {
             data: { ...{ email: email }, refreshToken, accessToken },
       },
       ));
+
 })
 
 
 
 
 
-export { registerUser, loginUser }
+export { loginUser }
