@@ -12,3 +12,6 @@ class AppException implements Exception {
 class NotFoundException extends AppException {
   NotFoundException({required super.message, super.responseData});
 }
+class TokenExpired extends AppException {
+  TokenExpired({required super.message, super.responseData});
+}

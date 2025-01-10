@@ -10,7 +10,10 @@ class ApiResponse {
       case 200:
       case 201:
         return responseJson["data"];
-
+      case 401:
+        //logout logic
+        
+        throw TokenExpired(message: responseJson["message"]);
       case 404:
         throw NotFoundException(
             message: responseJson["message"],

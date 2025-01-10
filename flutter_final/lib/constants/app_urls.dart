@@ -7,4 +7,6 @@ class AppUrls {
   static const String addProduct = "/api/product";
   static String editProduct(int id) => "/api/product?id=$id";
   static String deleteProduct(int id) => "/api/product?id=$id";
+  static const String login = "/api/users/login";
+  static const String refreshToken = "/api/generateToken";
 }

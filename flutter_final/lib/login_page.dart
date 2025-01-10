@@ -1,4 +1,6 @@
+import 'package:apicallflutter/constants/app_urls.dart';
 import 'package:apicallflutter/products.dart';
+import 'package:apicallflutter/services/api_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,15 +14,26 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  Future<void> _saveCredentials() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('accessToken', _emailController.text);
-    await prefs.setString('refreshToken', _emailController.text);
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => ProductListPage()));
-  }
+  Future<void> _login() async {
+    try {
+      final Map<String, dynamic> response =
+          await ApiHelper.postCall(AppUrls.login, body: {
+        "email": _emailController.text,
+        "password": _passwordController.text
+      });
 
-  Future<void> _login() async {}
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('accessToken', response["accessToken"]);
+      await prefs.setString('refreshToken', response["refreshToken"]);
+      await prefs.setString('email', response["email"]);
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => ProductListPage()));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

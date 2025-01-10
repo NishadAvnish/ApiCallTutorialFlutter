@@ -20,12 +20,11 @@ let products = [
 app.use("/api/users", userRoutes);
 app.use("/api/generateToken", createTokenUsingRefreshToken);
 
-// app.use(tokenAuthentication);
+app.use(tokenAuthentication);
 
 
 // Get list of products
 app.get('/api/products', (req, res) => {
-    console.log("Id:");
 
     res.status(200).send(new ApiResponse({ status: 200, message: AppStrings.successful, data: products }))
 });

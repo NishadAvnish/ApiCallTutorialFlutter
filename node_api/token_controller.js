@@ -12,17 +12,14 @@ const createToken = ({ payload, expiryTime }) => {
 
 const tokenAuthentication = asyncHandler(async (req, res, next) => {
 
-    const token = req?.body?.accessToken || req?.query?.params?.accessToken || req?.headers?.authorization;
-    console.log("Avnishh....")
+    const token = req?.headers?.authorization;
 
     if (!token) {
         return next(new BadRequestException("Jwt Token Required!"))
     }
     const decodedPassword = jwt.verify(token, privateSecretKey, (error, user) => {
-        if (error.name === "TokenExpiredError") {
+        if (error?.name === "TokenExpiredError") {
             return next(new TokenExpirationException());
-        } else {
-            return next(new BadRequestException(error.message));
         }
     });
     next();
