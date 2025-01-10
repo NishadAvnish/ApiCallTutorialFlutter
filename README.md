@@ -22,3 +22,6 @@ Step 5: npm start
 
 
 That's all you need to do.
+
+
+**Please show your support by giving star to the repo, Thanks**
